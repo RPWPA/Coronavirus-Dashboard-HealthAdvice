@@ -1,11 +1,5 @@
-
-
-//Might need in the future. 
-
-
-import React, { Component } from 'react'
-import { Text, View, ScrollView } from 'react-native'
-
+import React, {useState,useEffect} from 'react'
+import { View, Text, StyleSheet } from 'react-native'
 
 async function loadingData() {
     const adviceUrl = `https://www.who.int/emergencies/diseases/novel-coronavirus-2019/advice-for-public`;
@@ -15,79 +9,96 @@ async function loadingData() {
     const htmlString = await response.text();
     const $ = cheerio.load(htmlString);       // parse HTML string
 
-    // console.log($("h3").html())
-
-    // console.log($("h3").map(function (i,el){$(this).html()}))
-
-    // $("h3").forEach(element => {
-    //     console.log(element.html())
-    // });
-
-    // console.log($("div").find("h3").length)
-
 
     adv = [];
 
     $("h3").each(function (i,element){
 
-        
-        //console.log($("h3").html())
+        //console.log($("h3").html()) 
+        // this === element
         adv[i] = $(this).text();
         
     })
     
     return adv;
-
-    // map((h3) => ({
-    //     title: $(h3).Text
-    // }))
-    //     //     .map((_,h3)=> ({
-        //         title: $("Text", h3).text()
-        // }));
     
 }
 
 
-class HealthAdvice extends Component {
 
-    state = {
-        adviceWHO : []
-    }
+const HealthAdvice = () => {
 
+    
+    const [advArr, setAdvArr] = useState(" ")
 
-    componentDidMount(){
-        this.setState(async state => {
-            const adviceWHO = await loadingData();
-            //console.log(adviceWHO);
-            return {adviceWHO}
-            // console.log(advWHO)
-            // console.log(adviceWHO[0])
-            //return {adviceWHO}
-        })
-    }
+    useEffect(() => {
 
-
-    componentDidUpdate(){
-        // console.log()
-        console.log(this.state.adviceWHO);
+        const fetchData = async () => {
+            const results = await loadingData()
+            setAdvArr(results);
+        }
         
-    }
+        fetchData()
 
-    render() {
-        // console.log(this.state.adviceWHO);
-        
-        return (
-            
-            <ScrollView>
-                {
-                    this.state.adviceWHO.map(advice => <Text>{advice}</Text>)
-                }
-            </ScrollView>
-        )
-    }
+    },[])
+
+    return (
+        <View style={styles.adviceContainer}>
+
+            {
+
+            advArr !== " " ? <Text style={styles.adviceHeader}>Advice from WHO:</Text> : null
+
+            }
+            {   
+                advArr !== " " ? advArr.map((advice,index) => 
+                
+                <View key={index}>
+                    
+                     <Text style={styles.advices}>{index + 1}) {advice}.</Text> 
+                
+                </View>) 
+                : <Text style={styles.waiting}>Please wait while we load the newest data :)</Text>
+            }
+
+        </View>
+    )
 }
 
 
+
+
+const styles = StyleSheet.create({
+    adviceContainer:{
+        height:900,
+        fontFamily:"Roboto",
+        backgroundColor:"#54002A",
+        paddingLeft:10
+        
+    },
+    adviceHeader:{
+        fontSize:25,
+        marginTop:180,
+        borderBottomWidth:3,
+        width:211,
+        color:"#00A0A0",
+        borderBottomColor:"#0F0F0F",
+        marginBottom:22
+    },
+    advices:{
+        fontSize:20,
+        marginBottom:10,
+        color:"#00A0A0",
+    },
+    waiting:{
+        fontFamily:"Roboto",
+        marginTop:340,
+        color:"#00A0A0",
+        alignItems:"center",
+        width:374,
+        fontSize:18
+    }
+})
 
 
 export default HealthAdvice
